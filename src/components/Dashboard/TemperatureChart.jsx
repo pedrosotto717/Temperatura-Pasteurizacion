@@ -5,6 +5,16 @@ import { useNavigate } from "react-router-dom";
 import { Chart } from "chart.js/auto";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 
+function getDateTime(seconds) {
+  const date = new Date(seconds * 1000);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+  return `${day}/${month}/${year} ${hour}:${minute}`;
+}
+
 const TemperatureChart = (props) => {
   const {
     urlDatabase = "/temperatures",
@@ -26,7 +36,7 @@ const TemperatureChart = (props) => {
         query(collection(db, urlDatabase), orderBy("timestamp", "asc")),
         (snapshot) => {
           setTempData(
-            snapshot.docs.slice(0, 15).map((doc) => ({
+            snapshot.docs.map((doc) => ({
               id: doc.id,
               ...doc.data(),
             }))
@@ -46,7 +56,7 @@ const TemperatureChart = (props) => {
       const lineChart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: tempdata.map(() => new Date()), // Empty labels array
+          labels: tempdata.map((item) => getDateTime(item.timestamp.seconds)), // Empty labels array
           datasets: [
             {
               label: "Temperature",
